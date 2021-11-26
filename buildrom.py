@@ -15,7 +15,7 @@ default_args = [
         "-t",
         "nes",
         "-C",
-        "./uorom2mbit.cfg",
+        "./unrom512.cfg",
         "-m pitwiths.map",
         "./src/unrom.s",
         "./src/init.s",

@@ -13,40 +13,32 @@
 
 .segment "INESHDR"
   .byt "NES",$1A  ; magic signature
-  .byt 16         ; size of PRG ROM in 16384 byte units
+  .byt 32         ; size of PRG ROM in 16384 byte units
   .byt 0          ; size of CHR ROM in 8192 byte units
-  .byt $21        ; lower mapper nibble, vertical mirroring
-  .byt $00        ; upper mapper nibble
+  .byt $e3        ; lower mapper nibble, vertical mirroring, flashable
+  .byt $10        ; upper mapper nibble
   
 .segment "ZEROPAGE"
 lastPRGBank: .res 1
 lastBankMode: .res 1
 bankcallsaveA: .res 1
 
-; Each bank has 16384 bytes: 16368 for you to use as you wish and
-; 16 for a piece of code that puts the mapper in a predictable state.
-; This code needs to be repeated in all the banks because we don't
-; necessarily know which bank is switched in at power-on or reset.
-;
-; On most discrete logic mappers (AOROM 7, BNROM 34, GNROM 66, and
-; Crazy Climber UNROM 180), writing a value with bits 5-0 true
-; (that is, $3F, $7F, $BF, $FF) switches in the last PRG bank, but
-; it has to be written to a ROM address that has the same value.
+; UNROM512 configuration has a static bank at $c000 so this stub
+; simply guarantees that bank $00 is loaded at $8000 on startup
 .macro resetstub_in segname
 .segment segname
 .scope
 resetstub_entry:
-  sei
-  ldx #$FF
-  txs
-  stx $FFF2  ; Writing $80-$FF anywhere in $8000-$FFFF resets MMC1
+  lda filler
+  sta filler
   jmp reset_handler
+  filler: .byt $00
   .addr nmi_handler, resetstub_entry, irq_handler
 .endscope
 .endmacro
 
 .segment "CODE"
-resetstub_in "STUB15"
+resetstub_in "STUB31"
 
 .segment "CODE"
 ;;
@@ -55,7 +47,7 @@ resetstub_in "STUB15"
 .proc setPRGBank
   sta lastPRGBank
   tay
-  sta identity16,y
+  sta identity128,y
   rts
 .endproc
 
@@ -96,7 +88,8 @@ resetstub_in "STUB15"
 .segment "RODATA"
 ; To avoid bus conflicts, bankswitch needs to write a value
 ; to a ROM address that already contains that value.
-identity16:
-  .repeat 16, I
+; see https://wiki.nesdev.org/w/index.php?title=UNROM_512#RetroUSB_board
+identity128:
+  .repeat 128, I
     .byte I
   .endrepeat
