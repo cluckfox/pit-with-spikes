@@ -1,7 +1,6 @@
 *.sw[a-p]
 *.o
 *~
-*.chr
 /obj/nes/*.s
 /zip.in
 *.nes.deb
@@ -9,6 +8,8 @@
 /nsfmap.txt
 __pycache__/
 *.pyc
+*.map
+*.nes
 
 # this is NES homebrew, not DSiWare
 *.DS_Store
