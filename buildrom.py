@@ -16,7 +16,8 @@ default_args = [
         "nes",
         "-C",
         "./unrom512.cfg",
-        "-m pitwiths.map",
+        "-m",
+        "pitwiths.map",
         "./src/unrom.s",
         "./src/init.s",
         "./src/bankcalltable.s",
@@ -30,7 +31,7 @@ default_args = [
         ]
 
 def cl65(*args):
-    allargs = ['cl65'] + default_args
+    allargs = ['cl65'] + list(args)
     result = subprocess.run(allargs, check=True)
     pprint.pprint(result)
 
