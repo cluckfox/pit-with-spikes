@@ -11,6 +11,7 @@
 .include "nes.inc"
 .include "mmc1.inc"
 .include "global.inc"
+.include "ldvram.inc"
 
 OAM = $0200
 
@@ -109,18 +110,8 @@ vw3:
 .endproc
 
 .proc load_main_palette
-  ; seek to the start of palette memory ($3F00-$3F1F)
-  ldx #$3F
-  stx PPUADDR
-  ldx #$00
-  stx PPUADDR
-copypalloop:
-  lda initial_palette,x
-  sta PPUDATA
-  inx
-  cpx #32
-  bcc copypalloop
-  rts
+	LDVRAM	initial_palette, 32, $3f00
+	rts
 .endproc
 .segment "RODATA"
 initial_palette:
