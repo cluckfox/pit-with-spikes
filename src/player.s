@@ -26,6 +26,14 @@ RIGHT_WALL = 224
 
 .segment "CODE"
 
+.macro CRASH
+.scope
+.importzp fault_frame
+	dec	fault_frame
+	brk
+.endscope
+.endmacro
+
 .proc init_player
   lda #0
   sta player_xlo
@@ -135,6 +143,7 @@ RIGHT_WALL = 224
     sta player_xhi
     lda #0
     sta player_dxlo
+    CRASH
     beq doneWallCollision
   notHitLeft:
 

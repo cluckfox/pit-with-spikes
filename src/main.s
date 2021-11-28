@@ -33,19 +33,6 @@ new_keys:      .res 2
   rti
 .endproc
 
-; A null IRQ handler that just does RTI is useful to add breakpoints
-; that survive a recompile.  Set your debugging emulator to trap on
-; reads of $FFFE, and then you can BRK $00 whenever you need to add
-; a breakpoint.
-;
-; But sometimes you'll want a non-null IRQ handler.
-; On NROM, the IRQ handler is mostly used for the DMC IRQ, which was
-; designed for gapless playback of sampled sounds but can also be
-; (ab)used as a crude timer for a scroll split (e.g. status bar).
-.proc irq_handler
-  rti
-.endproc
-
 .segment "BANK04"
 
 .proc main

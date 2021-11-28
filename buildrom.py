@@ -27,7 +27,10 @@ default_args = [
         "./src/pads.s",
         "./src/player.s",
         "./src/ppuclear.s",
-        "./src/ldvram.s"
+        "./src/ldvram.s",
+        "./src/fault.s",
+        "./src/sprite.s",
+        "./src/irq.s"
         ]
 
 def cl65(*args):

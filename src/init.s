@@ -1,3 +1,15 @@
+;
+; Simple sprite demo for NES
+; Copyright 2011 Damian Yerrick
+;
+; Copying and distribution of this file, with or without
+; modification, are permitted in any medium without royalty provided
+; the copyright notice and this notice are preserved in all source
+; code copies.  This file is offered as-is, without any warranty.
+;
+
+; Modified by Cluckfox in 2021
+
 .include "nes.inc"
 .include "mmc1.inc"
 .include "global.inc"
@@ -86,3 +98,4 @@ vwait2:
   jmp main
 .endproc
 
+; vim: set syntax=asm_ca65:
