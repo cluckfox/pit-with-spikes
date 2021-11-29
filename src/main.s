@@ -12,26 +12,15 @@
 .include "mmc1.inc"
 .include "global.inc"
 .include "ldvram.inc"
+.import famistudio_music_play, music_data_tutorial, famistudio_init
+.importzp nmis
 
 OAM = $0200
 
 .segment "ZEROPAGE"
-nmis:          .res 1
 oam_used:      .res 1  ; starts at 0
 cur_keys:      .res 2
 new_keys:      .res 2
-
-.segment "CODE"
-;;
-; This NMI handler is good enough for a simple "has NMI occurred?"
-; vblank-detect loop.  But sometimes there are things that you always
-; want to happen every frame, even if the game logic takes far longer
-; than usual.  These might include music or a scroll split.  In these
-; cases, you'll need to put more logic into the NMI handler.
-.proc nmi_handler
-  inc nmis
-  rti
-.endproc
 
 .segment "BANK04"
 
@@ -52,7 +41,8 @@ new_keys:      .res 2
   
   ; Set up game variables, as if it were the start of a new level.
   jsr init_player
-
+  lda #0
+  jsr famistudio_music_play
 forever:
 
   ; Game logic
@@ -78,7 +68,6 @@ forever:
 vw3:
   cmp nmis
   beq vw3
-  
   ; Copy the display list from main RAM to the PPU
   lda #0
   sta OAMADDR

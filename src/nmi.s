@@ -19,62 +19,16 @@
 ; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
+.export nmi_handler
+.exportzp nmis
+.import famistudio_update
 
-.include "mmc1.inc"
-.include "fault_frame.inc"
-
-
-.export irq_handler
-.import fault_main, setPRGBank, famistudio_update
-.importzp fault_frame, lastPRGBank
+.ZEROPAGE
+nmis:	.res 1
 
 .CODE
-.proc	irq_handler
-	bit	fault_frame
-	bmi	@isbrk
-	jmp	@next
-@isbrk:	jmp	service_brk
-@next:	bit	$4015
-	bvc	exit
-	jmp	service_apu
-exit:	rti
-.endproc ; irq_handler
-
-.proc	service_brk
-	pla
-	lda	lastPRGBank
-	sta	fault_frame+FAULTFR::fbank
-	pla
-	sta	fault_frame+FAULTFR::faddr
-	pla
-	sta	fault_frame+FAULTFR::faddr+1
-	lda	#>crash_init
-	pha
-	lda	#<crash_init
-	pha
-	lda	#0
-	pha
+.proc nmi_handler
+	inc	nmis
 	rti
-.endproc ; service_brk
-
-.proc	service_apu
-	pha
-	txa
-	pha
-	tya
-	pha
-	jsr	famistudio_update
-	pla
-	tay
-	pla
-	tax
-	pla
-	rti
-.endproc
-
-.proc	crash_init
-	lda	#0
-	jsr	setPRGBank
-	jmp	fault_main
 .endproc
 ; vim: set syntax=asm_ca65:
