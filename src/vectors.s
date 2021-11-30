@@ -19,25 +19,11 @@
 ; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
-.export nmi_handler, nmi_stall
-.exportzp nmis
-.import famistudio_update
+.import reset_unrom512, nmi_handler, irq_handler
+.segment "VECTORS"
+.scope 
+vectors:
+.word nmi_handler, reset_unrom512, irq_handler
+.endscope
 
-.ZEROPAGE
-nmis:	.res 1
-
-.CODE
-.proc nmi_handler
-	inc	nmis
-	rti
-.endproc
-
-.proc	nmi_stall
-	pha
-	lda	nmis
-loop:	cmp	nmis
-	beq	loop
-	pla
-	rts
-.endproc
 ; vim: set syntax=asm_ca65:

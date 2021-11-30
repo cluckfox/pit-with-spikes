@@ -45,6 +45,8 @@ PPUDATA = $2007
 
 OAM_DMA = $4014
 SNDCHN = $4015
+DMC10 = $4010
+APUSEQ = $4017
 P1 = $4016
 P2 = $4017
 
@@ -58,3 +60,4 @@ KEY_LEFT   = %00000010
 KEY_RIGHT  = %00000001
 
 .endif
+; vim: set syntax=asm_ca65:

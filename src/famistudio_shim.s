@@ -20,15 +20,9 @@
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
 
-.export famistudio_init
-.export famistudio_music_play
-.export famistudio_music_pause
-.export famistudio_music_stop
-.export famistudio_sfx_init
-.export famistudio_sfx_play
-.export famistudio_sfx_sample_play
-.export famistudio_update
+.export famistudio_shim_reset
 
+.include "macros/regs.inc"
 
 .define FAMISTUDIO_CA65_ZP_SEGMENT ZEROPAGE
 .define FAMISTUDIO_CA65_RAM_SEGMENT BSS
@@ -53,6 +47,20 @@ FAMISTUDIO_USE_ARPEGGIO          = 1
 FAMISTUDIO_CFG_C_BINDINGS        = 0
 
 .include "../vendor/FamiStudio/SoundEngine/famistudio_ca65.s"
+
+.CODE
+.proc	famistudio_shim_reset
+	PHREGS
+	ldx	#<music_data_tutorial
+	ldy	#>music_data_tutorial
+	lda	#1
+	jsr	famistudio_init
+	ldx	#<sounds
+	ldy	#>sounds
+	jsr	famistudio_sfx_init
+	PLREGS
+	rts	
+.endproc
 
 .segment "RODATA"
 .include "audio/tutorial.s"

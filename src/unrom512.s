@@ -8,8 +8,11 @@
 ; code copies.  This file is offered as-is, without any warranty.
 ;
 
+; Modified by CluckFox in 2021
+.export reset_unrom512
+.import reset_handler, bankcall_table
+
 .include "mmc1.inc"  ; implements a subset of the same interface
-.import nmi_handler, reset_handler, irq_handler, bankcall_table
 
 .segment "INESHDR"
   .byt "NES",$1A  ; magic signature
@@ -23,24 +26,10 @@ lastPRGBank: .res 1
 lastBankMode: .res 1
 bankcallsaveA: .res 1
 
-; UNROM512 configuration has a static bank at $c000 so this stub
-; simply guarantees that bank $00 is loaded at $8000 on startup
-.macro resetstub_in segname
-.segment segname
-.scope
-resetstub_entry:
-  lda filler
-  sta filler
-  jmp reset_handler
-  filler: .byt $00
-  .addr nmi_handler, resetstub_entry, irq_handler
-.endscope
-.endmacro
-
 .segment "CODE"
-resetstub_in "STUB31"
-
-.segment "CODE"
+.proc	reset_unrom512
+	jmp	reset_handler
+.endproc
 ;;
 ; Changes $8000-$BFFF to point to a 16384 byte chunk of PRG ROM
 ; starting at $4000 * A.

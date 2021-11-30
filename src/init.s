@@ -13,31 +13,17 @@
 .include "nes.inc"
 .include "mmc1.inc"
 .include "global.inc"
-.import famistudio_init, famistudio_sfx_init, sounds
-.import music_data_tutorial
+.include "macros/init.inc"
+
+.import nmi_stall, famistudio_shim_reset
 
 .segment "CODE"
-.proc reset_handler
+.proc	reset_handler
   ; The very first thing to do when powering on is to put all sources
   ; of interrupts into a known state.
-  sei             ; Disable interrupts
-  ldx #$00
-  stx PPUCTRL     ; Disable NMI and set VRAM increment to 32
-  stx PPUMASK     ; Disable rendering
-  stx $4010       ; Disable DMC IRQ
-  dex             ; Subtracting 1 from $00 gives $FF, which is a
-  txs             ; quick way to set the stack pointer to $01FF
-  bit PPUSTATUS   ; Acknowledge stray vblank NMI across reset
-  bit SNDCHN      ; Acknowledge DMC IRQ
-  lda #$00
-  sta P2          ; Enable APU Frame IRQ
-  lda #$0F
-  sta SNDCHN      ; Disable DMC playback, initialize other channels
-
-vwait1:
-  bit PPUSTATUS   ; It takes one full frame for the PPU to become
-  bpl vwait1      ; stable.  Wait for the first frame's vblank.
-
+	IRQOFF
+	NMIOFF
+	PPUSTALL
   ; We have about 29700 cycles to burn until the second frame's
   ; vblank.  Use this time to get most of the rest of the chipset
   ; into a known state.
@@ -49,50 +35,12 @@ vwait1:
   ; software BCD routines or convert numbers to decimal every time
   ; they are displayed.  But some post-patent famiclones have a
   ; working decimal mode, so turn it off for best compatibility.
-  cld
-  ldx #<music_data_tutorial
-  ldy #>music_data_tutorial
-  lda #1
-  jsr famistudio_init
-  ldx #<sounds
-  ldy #>sounds
-  jsr famistudio_sfx_init
-
-  ; Clear OAM and the zero page here.
-  ; We don't copy the cleared OAM to the PPU until later.
-  ldx #0
-  jsr ppu_clear_oam  ; clear out OAM from X to end and set X to 0
-
-  ; There are "holy wars" (perennial disagreements) on nesdev over
-  ; whether it's appropriate to zero out RAM in the init code.  Some
-  ; anti-zeroing people say it hides programming errors with reading
-  ; uninitialized memory, and memory will need to be initialized
-  ; again anyway at the start of each level.  Others in favor of
-  ; clearing say that a lot more variables need set to 0 than to any
-  ; other value, and a clear loop like this saves code size.  Still
-  ; others point to the C language, whose specification requires that
-  ; uninitialized variables be set to 0 before main() begins.
-  txa
-clear_zp:
-  sta $00,x
-  inx
-  bne clear_zp
-  
-  ; Other things that can be done here (not shown):
-  ; Set up PRG RAM
-  ; Copy initial high scores, bankswitching trampolines, etc. to RAM
-  ; Set up your sound engine
-  
-  lda #%01110
-  ;        ^^ Vertical mirroring (horizontal arrangement of nametables)
-  ;      ^^   Fixed $C000
-  ;     ^     8 KiB bank switching
-  jsr setMMC1BankMode
-
-vwait2:
-  bit PPUSTATUS  ; After the second vblank, we know the PPU has
-  bpl vwait2     ; fully stabilized.
-  
+  	cld
+	ZWRAM
+	jsr	famistudio_shim_reset
+	PPUSTALL
+	lda	#>OAM
+	sta	OAM_DMA
   ; There are two ways to wait for vertical blanking: spinning on
   ; bit 7 of PPUSTATUS (as seen above) and waiting for the NMI
   ; handler to run.  Before the PPU has stabilized, you want to use
@@ -101,10 +49,12 @@ vwait2:
   ; PPUSTATUS at the exact moment that the bit turns on, it'll flip
   ; from off to on to off faster than the CPU can see.
 
-  lda #4
-  jsr setPRGBank
-  cli
-  jmp main
+	lda 	#4
+	jsr 	setPRGBank
+	IRQON
+	NMION
+	jsr	nmi_stall
+	jmp 	main	; main starts in vblank
 .endproc
 
 ; vim: set syntax=asm_ca65:
