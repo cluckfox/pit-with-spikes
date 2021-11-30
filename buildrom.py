@@ -30,7 +30,9 @@ default_args = [
         "./src/ldvram.s",
         "./src/fault.s",
         "./src/sprite.s",
-        "./src/irq.s"
+        "./src/irq.s",
+        "./src/famistudio_shim.s",
+        "./src/nmi.s"
         ]
 
 def cl65(*args):

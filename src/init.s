@@ -13,6 +13,8 @@
 .include "nes.inc"
 .include "mmc1.inc"
 .include "global.inc"
+.import famistudio_init, famistudio_sfx_init, sounds
+.import music_data_tutorial
 
 .segment "CODE"
 .proc reset_handler
@@ -27,8 +29,8 @@
   txs             ; quick way to set the stack pointer to $01FF
   bit PPUSTATUS   ; Acknowledge stray vblank NMI across reset
   bit SNDCHN      ; Acknowledge DMC IRQ
-  lda #$40
-  sta P2          ; Disable APU Frame IRQ
+  lda #$00
+  sta P2          ; Enable APU Frame IRQ
   lda #$0F
   sta SNDCHN      ; Disable DMC playback, initialize other channels
 
@@ -39,7 +41,6 @@ vwait1:
   ; We have about 29700 cycles to burn until the second frame's
   ; vblank.  Use this time to get most of the rest of the chipset
   ; into a known state.
-
   ; Most versions of the 6502 support a mode where ADC and SBC work
   ; with binary-coded decimal.  Some 6502-based platforms, such as
   ; Atari 2600, use this for scorekeeping.  The second-source 6502 in
@@ -49,6 +50,13 @@ vwait1:
   ; they are displayed.  But some post-patent famiclones have a
   ; working decimal mode, so turn it off for best compatibility.
   cld
+  ldx #<music_data_tutorial
+  ldy #>music_data_tutorial
+  lda #1
+  jsr famistudio_init
+  ldx #<sounds
+  ldy #>sounds
+  jsr famistudio_sfx_init
 
   ; Clear OAM and the zero page here.
   ; We don't copy the cleared OAM to the PPU until later.
@@ -95,6 +103,7 @@ vwait2:
 
   lda #4
   jsr setPRGBank
+  cli
   jmp main
 .endproc
 

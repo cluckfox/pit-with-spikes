@@ -37,11 +37,19 @@
 .endproc
 
 .proc	quick_reset
+.import	famistudio_music_stop
+	sei
+	jsr	famistudio_music_stop
 	lda	#0
+	bit	PPUSTATUS
 	sta	PPUCTRL
 	bit	PPUSTATUS
 	sta	PPUMASK
 	sta	SNDCHN
+	sta	$4010
+	lda	#$40
+	sta	$4017
+	lda 	#0
 	tax
 @loop:	sta	OAM,x
 	inx

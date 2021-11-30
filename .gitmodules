@@ -1,0 +1,3 @@
+[submodule "vendor/FamiStudio"]
+	path = vendor/FamiStudio
+	url = https://github.com/BleuBleu/FamiStudio.git
