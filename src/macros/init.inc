@@ -19,25 +19,75 @@
 ; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
-.export nmi_handler, nmi_stall
-.exportzp nmis
-.import famistudio_update
+.ifndef MACROS_INIT_INC
+.define MACROS_INIT_INC
 
-.ZEROPAGE
-nmis:	.res 1
+; Clobbers A
+.macro	NMIOFF
+	lda	#0
+	sta	PPUCTRL
+	bit	PPUSTATUS
+.endmacro
 
-.CODE
-.proc nmi_handler
-	inc	nmis
-	rti
-.endproc
+; Clobbers A
+.macro	NMION
+	lda	#VBLANK_NMI
+	sta	PPUCTRL
+	bit	PPUSTATUS
+.endmacro
 
-.proc	nmi_stall
-	pha
-	lda	nmis
-loop:	cmp	nmis
-	beq	loop
-	pla
-	rts
-.endproc
+; Clobbers A
+.macro IRQOFF
+	sei
+	lda	#%01000000
+	sta	APUSEQ
+	lda	#0
+	sta	SNDCHN
+	sta	DMC10
+	bit	SNDCHN
+.endmacro
+
+; Clobbers A
+.macro	IRQON
+	lda	#0
+	sta	APUSEQ
+	cli
+.endmacro
+
+; clobbers flags NVZ
+.macro	PPUSTALL
+.scope 
+stall:	bit	PPUSTATUS
+	bpl	stall
+.endscope
+.endmacro
+
+; clobbers everything including SP and WRAM ($0000 - $07FF)
+.macro	ZWRAM
+	ZPAGE	$0000
+	ZPAGE	$0100
+	ldx	#$ff
+	txs
+	ZPAGE	$0200
+	ZPAGE	$0300
+	ZPAGE	$0400
+	ZPAGE	$0500
+	ZPAGE	$0600
+	ZPAGE	$0700
+.endmacro
+
+; Clobbers A, X, and 256 bytes of addr
+.macro ZPAGE	addr
+.scope 
+	lda	#0
+	ldx	#0
+loop:	sta	addr,x
+	inx
+	bne	loop
+.endscope
+.endmacro
+
+
+
+.endif
 ; vim: set syntax=asm_ca65:

@@ -19,25 +19,26 @@
 ; LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 ; OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 ; SOFTWARE.
-.export nmi_handler, nmi_stall
-.exportzp nmis
-.import famistudio_update
+.ifndef MACROS_REGS_INC
+.define MACROS_REGS_INC
 
-.ZEROPAGE
-nmis:	.res 1
-
-.CODE
-.proc nmi_handler
-	inc	nmis
-	rti
-.endproc
-
-.proc	nmi_stall
+;; Clobbers everything
+.macro	PHREGS
 	pha
-	lda	nmis
-loop:	cmp	nmis
-	beq	loop
+	txa
+	pha
+	tya
+	pha
+.endmacro
+
+;; Clobbers everything
+.macro	PLREGS
 	pla
-	rts
-.endproc
+	tay
+	pla
+	tax
+	pla
+.endmacro
+
+.endif
 ; vim: set syntax=asm_ca65:
