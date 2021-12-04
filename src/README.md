@@ -10,3 +10,4 @@ Program Modules
 * `fault.s` - main loop to display brk bank and location
 * `main.s` - main loop for snrom-template demo
 * `ldvram.s` - pseudo-DMA routine for loading CHR-RAM
+* `scene.s` - scene-changing routine

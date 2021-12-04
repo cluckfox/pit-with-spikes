@@ -33,7 +33,8 @@ default_args = [
         "./src/sprite.s",
         "./src/irq.s",
         "./src/famistudio_shim.s",
-        "./src/nmi.s"
+        "./src/nmi.s",
+        "./src/scene.s"
         ]
 
 def cl65(*args):

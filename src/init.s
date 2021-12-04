@@ -15,7 +15,8 @@
 .include "global.inc"
 .include "macros/init.inc"
 
-.import nmi_stall, famistudio_shim_reset
+.import nmi_stall, famistudio_shim_reset, load_scene
+.importzp scene
 
 .segment "CODE"
 .proc	reset_handler
@@ -49,12 +50,13 @@
   ; PPUSTATUS at the exact moment that the bit turns on, it'll flip
   ; from off to on to off faster than the CPU can see.
 
-	lda 	#4
-	jsr 	setPRGBank
 	IRQON
 	NMION
 	jsr	nmi_stall
-	jmp 	main	; main starts in vblank
+	dec	scene
+	lda	#0 		; first scene
+	jsr	load_scene	; never returns
+	brk
 .endproc
 
 ; vim: set syntax=asm_ca65:
